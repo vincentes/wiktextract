@@ -2,7 +2,7 @@
 # from wiktionary.
 #
 # Copyright (c) 2018 Tatu Ylonen.  See file LICENSE and https://ylonen.org
-
+import sys # Added
 import re
 import bz2
 import html
@@ -10,6 +10,8 @@ import collections
 from lxml import etree
 import wikitextparser
 from wiktextract import wiktlangs
+
+wordcount = 0
 
 
 # These XML tags are ignored when parsing.
@@ -1719,13 +1721,6 @@ def parse_pronunciation(word, data, text, p):
                 data_append(variant, "stress", t_arg(t, 1))
             elif name == "PIE root":
                 data_append(variant, "pie_root", t_arg(t, 2))
-            # If an audio file has been specified for the word,
-            # collect those under "audios".
-            elif name in ("audio", "audio-pron"):
-                data_append(variant, "audios",
-                            (t_arg(t, "lang"),
-                             t_arg(t, 1),
-                             t_arg(t, 2)))
             # If homophones have been specified, collect those under
             # "homophones".
             elif name in ("homophones", "homophone"):
@@ -2427,6 +2422,7 @@ class WiktionaryTarget(object):
 
     def end(self, tag):
         """This function is called whenever an XML end tag is encountered."""
+        global wordcount
         idx = tag.find("}")
         if idx >= 0:
             tag = tag[idx + 1:]
@@ -2435,6 +2431,9 @@ class WiktionaryTarget(object):
         assert tag == ptag
         attrs = self.attrs
         data = "".join(self.data).strip()
+        #print("<" + tag + ">")
+        #print(data)
+        #print("</" + ptag + ">")
         self.data = []
         if tag in ignore_tags:
             return
@@ -2484,6 +2483,8 @@ class WiktionaryTarget(object):
                 ret = parse_text(title, self.text, self)
                 for data in ret:
                     self.word_cb(data)
+                    wordcount += 1
+                    print(data['word'], wordcount)
         else:
             print("UNSUPPORTED", tag, len(data), attrs)
 

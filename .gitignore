@@ -3,3 +3,8 @@ build/
 MANIFEST
 dist/
 *.egg-info/
+words-dict.mp.gz
+words-dict.json
+words-dict.mp
+*.xml.bz2
+wikt.words
